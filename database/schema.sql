@@ -120,7 +120,7 @@ CREATE TABLE IF NOT EXISTS game_favorites (
 -- 插入初始测试数据
 -- 默认管理员用户 (密码: admin123, 实际需要bcrypt哈希)
 INSERT INTO users (username, password, nickname, role) VALUES
-('admin', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', '管理员', 'admin'),
-('teacher1', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', '张老师', 'teacher'),
-('student1', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', '小明', 'student')
+('admin', '$2a$10$26iDPYFGZCqO0wDNHIgieO5TBkbnghdoBxsrV1ekicZ0dG8Q83z4y', '管理员', 'admin'),
+('teacher1', '$2a$10$hCvCWyG.n8nVBf36P8iAOuLokOT2SKuq0Zh7m7VRvKuUvASjME9Ou', '张老师', 'teacher'),
+('student1', '$2a$10$6D3ZW6PzTCK8Kwi68hjBGumgxSe4sjfaUvyxH/CyS2Hd4KO1R7jYq', '小明', 'student')
 ON DUPLICATE KEY UPDATE username=username;

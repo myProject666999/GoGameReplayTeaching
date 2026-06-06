@@ -6,11 +6,16 @@ const request = axios.create({
   timeout: 30000
 })
 
+const PUBLIC_PATHS = ['/auth/login', '/auth/register']
+
 request.interceptors.request.use(
   (config) => {
-    const userStore = useUserStore()
-    if (userStore.token) {
-      config.headers.Authorization = `Bearer ${userStore.token}`
+    const isPublic = PUBLIC_PATHS.some(p => config.url && config.url.includes(p))
+    if (!isPublic) {
+      const userStore = useUserStore()
+      if (userStore.token) {
+        config.headers.Authorization = `Bearer ${userStore.token}`
+      }
     }
     return config
   },
@@ -25,7 +30,9 @@ request.interceptors.response.use(
   },
   (error) => {
     if (error.response) {
-      if (error.response.status === 401) {
+      const url = error.config?.url || ''
+      const isPublic = PUBLIC_PATHS.some(p => url.includes(p))
+      if (error.response.status === 401 && !isPublic) {
         const userStore = useUserStore()
         userStore.logout()
       }
