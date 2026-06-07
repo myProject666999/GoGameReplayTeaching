@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -35,7 +36,8 @@ func (h *GameHandler) Create(c echo.Context) error {
 	userID := middleware.GetUserID(c)
 	var req CreateGameRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request"})
+		log.Printf("[CreateGame] bind error: %v", err)
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request: " + err.Error()})
 	}
 
 	if strings.TrimSpace(req.SGFContent) == "" {
@@ -43,6 +45,7 @@ func (h *GameHandler) Create(c echo.Context) error {
 	}
 
 	if _, err := sgf.Parse(req.SGFContent); err != nil {
+		log.Printf("[CreateGame] SGF parse error: %v", err)
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid SGF format: " + err.Error()})
 	}
 
@@ -54,9 +57,11 @@ func (h *GameHandler) Create(c echo.Context) error {
 	}
 
 	var datePtr *string
-	if req.DatePlayed != "" {
+	if strings.TrimSpace(req.DatePlayed) != "" {
 		datePtr = &req.DatePlayed
 	}
+
+	komi := req.Komi
 
 	game := models.Game{
 		UserID:      userID,
@@ -64,7 +69,7 @@ func (h *GameHandler) Create(c echo.Context) error {
 		BlackPlayer: req.BlackPlayer,
 		WhitePlayer: req.WhitePlayer,
 		BoardSize:   req.BoardSize,
-		Komi:        req.Komi,
+		Komi:        &komi,
 		Result:      req.Result,
 		DatePlayed:  datePtr,
 		SGFContent:  req.SGFContent,
@@ -73,7 +78,8 @@ func (h *GameHandler) Create(c echo.Context) error {
 	}
 
 	if err := database.DB.Create(&game).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "failed to create game"})
+		log.Printf("[CreateGame] DB create error: %v", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "failed to create game: " + err.Error()})
 	}
 
 	return c.JSON(http.StatusCreated, game)
@@ -162,11 +168,13 @@ func (h *GameHandler) Update(c echo.Context) error {
 
 	var req CreateGameRequest
 	if err := c.Bind(&req); err != nil {
+		log.Printf("[UpdateGame] bind error: %v", err)
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request"})
 	}
 
 	if req.SGFContent != "" {
 		if _, err := sgf.Parse(req.SGFContent); err != nil {
+			log.Printf("[UpdateGame] SGF parse error: %v", err)
 			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid SGF format: " + err.Error()})
 		}
 		game.SGFContent = req.SGFContent
@@ -180,13 +188,20 @@ func (h *GameHandler) Update(c echo.Context) error {
 	if req.BoardSize > 0 {
 		game.BoardSize = req.BoardSize
 	}
-	game.Komi = req.Komi
+	komi := req.Komi
+	game.Komi = &komi
 	game.Result = req.Result
+	if strings.TrimSpace(req.DatePlayed) != "" {
+		game.DatePlayed = &req.DatePlayed
+	} else {
+		game.DatePlayed = nil
+	}
 	game.Description = req.Description
 	game.IsPublic = req.IsPublic
 
 	if err := database.DB.Save(&game).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "failed to update game"})
+		log.Printf("[UpdateGame] DB save error: %v", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "failed to update game: " + err.Error()})
 	}
 
 	return c.JSON(http.StatusOK, game)

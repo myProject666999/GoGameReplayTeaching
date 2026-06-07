@@ -21,22 +21,22 @@ type User struct {
 func (User) TableName() string { return "users" }
 
 type Game struct {
-	ID           uint64    `json:"id" gorm:"primaryKey"`
-	UserID       uint64    `json:"user_id" gorm:"index;not null"`
-	Title        string    `json:"title" gorm:"size:255;not null"`
-	BlackPlayer  string    `json:"black_player" gorm:"size:100"`
-	WhitePlayer  string    `json:"white_player" gorm:"size:100"`
-	BoardSize    int       `json:"board_size" gorm:"not null;default:19"`
-	Komi         float64   `json:"komi" gorm:"type:decimal(4,1);default:6.5"`
-	Result       string    `json:"result" gorm:"size:50"`
-	DatePlayed   *string   `json:"date_played" gorm:"type:date"`
-	SGFContent   string    `json:"sgf_content" gorm:"type:longtext;not null"`
-	Description  string    `json:"description" gorm:"type:text"`
-	IsPublic     bool      `json:"is_public" gorm:"not null;default:false"`
-	ViewCount    int       `json:"view_count" gorm:"not null;default:0"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
-	User         *User     `json:"user,omitempty" gorm:"foreignKey:UserID"`
+	ID           uint64     `json:"id" gorm:"primaryKey"`
+	UserID       uint64     `json:"user_id" gorm:"index;not null"`
+	Title        string     `json:"title" gorm:"size:255;not null"`
+	BlackPlayer  string     `json:"black_player" gorm:"size:100"`
+	WhitePlayer  string     `json:"white_player" gorm:"size:100"`
+	BoardSize    int        `json:"board_size" gorm:"not null;default:19"`
+	Komi         *float64   `json:"komi" gorm:"type:decimal(4,1)"`
+	Result       string     `json:"result" gorm:"size:50"`
+	DatePlayed   *string    `json:"date_played" gorm:"type:date"`
+	SGFContent   string     `json:"sgf_content" gorm:"type:longtext;not null"`
+	Description  string     `json:"description" gorm:"type:text"`
+	IsPublic     bool       `json:"is_public" gorm:"not null;default:false"`
+	ViewCount    int        `json:"view_count" gorm:"not null;default:0"`
+	CreatedAt    time.Time  `json:"created_at"`
+	UpdatedAt    time.Time  `json:"updated_at"`
+	User         *User      `json:"user,omitempty" gorm:"foreignKey:UserID"`
 }
 
 func (Game) TableName() string { return "games" }

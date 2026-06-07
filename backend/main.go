@@ -20,6 +20,8 @@ func main() {
 	e := echo.New()
 	e.HideBanner = true
 
+	e.Use(middleware.Recover())
+	e.Use(middleware.RequestLogger())
 	e.Use(middleware.CORS())
 
 	userHandler := handlers.NewUserHandler(cfg)

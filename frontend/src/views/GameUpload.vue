@@ -38,6 +38,10 @@
             <label>结果</label>
             <input v-model="form.result" placeholder="例如：黑中盘胜、白2.5目胜" />
           </div>
+          <div class="form-group">
+            <label>对局日期</label>
+            <input v-model="form.date_played" type="date" />
+          </div>
         </div>
       </div>
 
@@ -130,6 +134,7 @@ const form = reactive({
   board_size: 19,
   komi: 6.5,
   result: '',
+  date_played: '',
   sgf_content: '',
   description: '',
   is_public: false
@@ -158,13 +163,17 @@ function readFile(file) {
   fileName.value = file.name
   const reader = new FileReader()
   reader.onload = (e) => {
-    form.sgf_content = e.target.result
+    let content = e.target.result
+    if (content.charCodeAt(0) === 0xFEFF) {
+      content = content.slice(1)
+    }
+    form.sgf_content = content.replace(/\r/g, '').trim()
     error.value = ''
   }
   reader.onerror = () => {
     error.value = '文件读取失败'
   }
-  reader.readAsText(file)
+  reader.readAsText(file, 'UTF-8')
 }
 
 async function submit() {
@@ -175,7 +184,16 @@ async function submit() {
   loading.value = true
   error.value = ''
   try {
-    const game = await createGame(form)
+    const payload = {
+      ...form,
+      komi: Number(form.komi) || 6.5,
+      board_size: Number(form.board_size) || 19,
+      sgf_content: form.sgf_content.replace(/\r/g, '').trim()
+    }
+    if (!payload.date_played) {
+      delete payload.date_played
+    }
+    const game = await createGame(payload)
     router.push(`/games/${game.id}`)
   } catch (e) {
     error.value = e.message
